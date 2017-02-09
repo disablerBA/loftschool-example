@@ -137,6 +137,49 @@ function findError(data1, data2) {
  - какой-либо из аргументов div является нулем (с текстом "division by 0")
  */
 function calculator(number) {
+    if (!isFinite(number)) {
+        throw new Error("number is not a number");
+    }
+
+    var result = {};
+
+    result.sum = function() {
+        var res = number;
+        for (var i = 0; i < arguments.length; i++) {
+            res += arguments[i];
+        }
+
+        return res;
+    }
+
+    result.dif = function() {
+        var res = number;
+        for (var i = 0; i < arguments.length; i++) {
+            res -= arguments[i];
+        }
+
+        return res;
+    }
+
+    result.div = function() {
+        var res = number;
+        for (var i = 0; i < arguments.length; i++) {
+            res /= arguments[i];
+        }
+
+        return res;
+    }
+
+    result.mul = function() {
+        var res = number;
+        for (var i = 0; i < arguments.length; i++) {
+            res *= arguments[i];
+        }
+
+        return res;
+    }
+
+    return result;
 }
 
 export {
