@@ -19,6 +19,15 @@ function getArgumentsArray(args) {
 
     return result;
 }
+
+function ProcessArray(initialValue, array, fn) {
+    var result = initialValue;
+    for (var i = 0; i < array.length; i ++) {
+        result = fn(result, array[i]);
+    }
+
+    return result;
+}
 /*
  вспомогательные функции
  */
@@ -153,21 +162,11 @@ function calculator(number = 0) {
     var result = {};
 
     result.sum = function() {
-        var res = number;
-        for (var i = 0; i < arguments.length; i++) {
-            res += arguments[i];
-        }
-
-        return res;
+        return ProcessArray(number, getArgumentsArray(arguments), (value1, value2) => value1 + value2);
     };
 
     result.dif = function() {
-        var res = number;
-        for (var i = 0; i < arguments.length; i++) {
-            res -= arguments[i];
-        }
-
-        return res;
+        return ProcessArray(number, getArgumentsArray(arguments), (value1, value2) => value1 - value2)
     };
 
     result.div = function() {
@@ -175,21 +174,11 @@ function calculator(number = 0) {
             throw new Error("division by 0");
         }
 
-        var res = number;
-        for (var i = 0; i < arguments.length; i++) {
-            res /= arguments[i];
-        }
-
-        return res;
+        return ProcessArray(number, getArgumentsArray(arguments), (value1, value2) => value1 / value2)
     };
 
     result.mul = function() {
-        var res = number;
-        for (var i = 0; i < arguments.length; i++) {
-            res *= arguments[i];
-        }
-
-        return res;
+        return ProcessArray(number, getArgumentsArray(arguments), (value1, value2) => value1 * value2)
     };
 
     return result;
