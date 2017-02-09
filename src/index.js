@@ -4,7 +4,7 @@
  вспомогательные функции
  */
 function isEmptyArray(object) {
-    return typeof object !== 'object' || !"length" in object || object.length === 0;
+    return !Array.isArray(object) || object.length === 0;
 }
 
 function isFunction(fn) {
