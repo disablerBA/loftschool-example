@@ -10,6 +10,15 @@ function isEmptyArray(object) {
 function isFunction(fn) {
     return typeof fn === 'function';
 }
+
+function getArgumentsArray(args) {
+    var result = [];
+    for (var i = 0; i < args.length; i++) {
+        result.push(args[i]);
+    }
+
+    return result;
+}
 /*
  вспомогательные функции
  */
@@ -136,7 +145,7 @@ function findError(data1, data2) {
  - number не является числом (с текстом "number is not a number")
  - какой-либо из аргументов div является нулем (с текстом "division by 0")
  */
-function calculator(number) {
+function calculator(number = 0) {
     if (!isFinite(number)) {
         throw new Error("number is not a number");
     }
@@ -150,7 +159,7 @@ function calculator(number) {
         }
 
         return res;
-    }
+    };
 
     result.dif = function() {
         var res = number;
@@ -159,16 +168,20 @@ function calculator(number) {
         }
 
         return res;
-    }
+    };
 
     result.div = function() {
+        if (isSomeTrue(getArgumentsArray(arguments), e => e == 0)) {
+            throw new Error("division by 0");
+        }
+
         var res = number;
         for (var i = 0; i < arguments.length; i++) {
             res /= arguments[i];
         }
 
         return res;
-    }
+    };
 
     result.mul = function() {
         var res = number;
@@ -177,7 +190,7 @@ function calculator(number) {
         }
 
         return res;
-    }
+    };
 
     return result;
 }
