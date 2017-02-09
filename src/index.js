@@ -13,6 +13,7 @@ function isFunction(fn) {
 
 function getArgumentsArray(args) {
     var result = [];
+
     for (var i = 0; i < args.length; i++) {
         result.push(args[i]);
     }
@@ -20,14 +21,56 @@ function getArgumentsArray(args) {
     return result;
 }
 
-function ProcessArray(initialValue, array, fn) {
+function processArray(initialValue, array, fn) {
     var result = initialValue;
+
     for (var i = 0; i < array.length; i ++) {
         result = fn(result, array[i]);
     }
 
     return result;
 }
+
+function assertIsFunction(fn) {
+    if (!isFunction(fn)) {
+        throwNotFunctionError();
+    }
+}
+
+function throwNotFunctionError() {
+    throw new Error('fn is not a function');
+}
+
+function assertNotEmptyArray(array) {
+    if (isEmptyArray(array) ) {
+        throwEmptyArrayError();
+    }
+}
+
+function throwEmptyArrayError() {
+    throw new Error('empty array');
+}
+
+function assertIsNumber(number) {
+    if (!isFinite(number)) {
+        throwNotNumberError();
+    }
+}
+
+function throwNotNumberError() {
+    throw new Error('number is not a number');
+}
+
+function assertNotDivisionByZero(args) {
+    if (isSomeTrue(getArgumentsArray(args), e => e == 0)) {
+        throwDivisionByZeroError();
+    }
+}
+
+function throwDivisionByZeroError() {
+    throw new Error('division by 0');
+}
+
 /*
  вспомогательные функции
  */
@@ -42,15 +85,11 @@ function ProcessArray(initialValue, array, fn) {
  Зарпещено использовать встроенные методы для работы с массивами
  */
 function isAllTrue(array, fn) {
-    if (isEmptyArray(array) ) {
-        throw new Error("empty array");
-    }
-
-    if (!isFunction(fn)) {
-        throw new Error("fn is not a function");
-    }
+    assertNotEmptyArray(array);
+    assertIsFunction(fn);
 
     var result = true;
+
     for (var i = 0; i < array.length; i++) {
         if (!fn(array[i])) {
             result = false;
@@ -70,13 +109,8 @@ function isAllTrue(array, fn) {
  Зарпещено использовать встроенные методы для работы с массивами
  */
 function isSomeTrue(array, fn) {
-    if (isEmptyArray(array) ) {
-        throw new Error("empty array");
-    }
-
-    if (!isFunction(fn)) {
-        throw new Error("fn is not a function");
-    }
+    assertNotEmptyArray(array);
+    assertIsFunction(fn);
 
     for (var i = 0; i < array.length; i++) {
         if (fn(array[i])) {
@@ -96,9 +130,7 @@ function isSomeTrue(array, fn) {
  - fn не является функцией (с текстом "fn is not a function")
  */
 function returnBadArguments(fn) {
-    if (!isFunction(fn)) {
-        throw new Error("fn is not a function");
-    }
+    assertIsFunction(fn);
 
     function getProcessArguments(args) {
         var result = [];
@@ -112,6 +144,7 @@ function returnBadArguments(fn) {
 
     var result = [];
     var processArguments = getProcessArguments(arguments);
+
     for (var i = 0; i < processArguments.length; i++) {
         try {
             fn(processArguments[i]);
@@ -155,30 +188,26 @@ function findError(data1, data2) {
  - какой-либо из аргументов div является нулем (с текстом "division by 0")
  */
 function calculator(number = 0) {
-    if (!isFinite(number)) {
-        throw new Error("number is not a number");
-    }
+    assertIsNumber(number);
 
     var result = {};
 
     result.sum = function() {
-        return ProcessArray(number, getArgumentsArray(arguments), (value1, value2) => value1 + value2);
+        return processArray(number, getArgumentsArray(arguments), (value1, value2) => value1 + value2);
     };
 
     result.dif = function() {
-        return ProcessArray(number, getArgumentsArray(arguments), (value1, value2) => value1 - value2)
+        return processArray(number, getArgumentsArray(arguments), (value1, value2) => value1 - value2)
     };
 
     result.div = function() {
-        if (isSomeTrue(getArgumentsArray(arguments), e => e == 0)) {
-            throw new Error("division by 0");
-        }
+        assertNotDivisionByZero(arguments);
 
-        return ProcessArray(number, getArgumentsArray(arguments), (value1, value2) => value1 / value2)
+        return processArray(number, getArgumentsArray(arguments), (value1, value2) => value1 / value2)
     };
 
     result.mul = function() {
-        return ProcessArray(number, getArgumentsArray(arguments), (value1, value2) => value1 * value2)
+        return processArray(number, getArgumentsArray(arguments), (value1, value2) => value1 * value2)
     };
 
     return result;
