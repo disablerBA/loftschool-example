@@ -16,6 +16,7 @@ function forEach(array, fn) {
  */
 function map(array, fn) {
     var result = [];
+
     for (var i = 0; i < array.length; i++) {
         result.push(fn(array[i], i , array));
     }
@@ -30,6 +31,7 @@ function map(array, fn) {
 function reduce(array, fn, initial) {
     var result;
     var initialIndex;
+
     if (initial !== undefined) {
         result = initial;
         initialIndex = 0;
@@ -60,7 +62,7 @@ function deleteProperty(obj, prop) {
  Функция должна проверить существует ли укзаанное свойство в указанном объекте
  */
 function hasProperty(obj, prop) {
-    return prop in obj;
+    return obj.hasOwnProperty(prop);
 }
 
 /*
@@ -69,6 +71,7 @@ function hasProperty(obj, prop) {
  */
 function getEnumProps(obj) {
     var result = [];
+
     for (var prop in obj) {
         result.push(prop);
     }
@@ -82,6 +85,7 @@ function getEnumProps(obj) {
  */
 function upperProps(obj) {
     var result = getEnumProps(obj);
+
     for (var i = 0; i < result.length; i++) {
         result.splice(i, 1, result[i].toUpperCase());
     }
@@ -94,7 +98,35 @@ function upperProps(obj) {
  Напишите аналог встроенного метода slice для работы с массивами
  */
 function slice(array, from, to) {
+    var result = [];
 
+    if (from === undefined) {
+        from = 0;
+        to = array.length;
+    }
+
+    if (to === undefined) {
+        to = array.length;
+    }
+
+    if (from < 0) {
+        from += array.length;
+
+        if (from < 0) {
+            from = 0;
+        }
+    }
+
+    if (to < 0 ) {
+        to += array.length;
+    }
+
+    if (to < from) {
+        return result;
+    }
+
+    result = Array.from(array);
+    return result.splice(from, to - from);
 }
 
 /*
