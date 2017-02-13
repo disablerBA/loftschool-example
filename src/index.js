@@ -5,6 +5,9 @@
  Напишите аналог встроенного метода forEach для работы с массивами
  */
 function forEach(array, fn) {
+    for (var i = 0; i < array.length; i++) {
+        fn(array[i], i, array);
+    }
 }
 
 /*
@@ -12,6 +15,12 @@ function forEach(array, fn) {
  Напишите аналог встроенного метода map для работы с массивами
  */
 function map(array, fn) {
+    var result = [];
+    for (var i = 0; i < array.length; i++) {
+        result.push(fn(array[i], i , array));
+    }
+
+    return result;
 }
 
 /*
@@ -19,6 +28,21 @@ function map(array, fn) {
  Напишите аналог встроенного метода reduce для работы с массивами
  */
 function reduce(array, fn, initial) {
+    var result;
+    var initialIndex;
+    if (initial !== undefined) {
+        result = initial;
+        initialIndex = 0;
+    } else {
+        result = array[0];
+        initialIndex = 1;
+    }
+
+    for (var i = initialIndex; i < array.length; i++) {
+        result = fn(result, array[i], i, array);
+    }
+
+    return result;
 }
 
 /*
@@ -27,6 +51,7 @@ function reduce(array, fn, initial) {
  Функция должна удалить указанное свойство из указанного объекта
  */
 function deleteProperty(obj, prop) {
+    delete obj[prop];
 }
 
 /*
@@ -35,6 +60,7 @@ function deleteProperty(obj, prop) {
  Функция должна проверить существует ли укзаанное свойство в указанном объекте
  */
 function hasProperty(obj, prop) {
+    return prop in obj;
 }
 
 /*
@@ -42,6 +68,12 @@ function hasProperty(obj, prop) {
  Функция должна получить все перечисляемые свойства объекта и вернуть их в виде массива
  */
 function getEnumProps(obj) {
+    var result = [];
+    for (var prop in obj) {
+        result.push(prop);
+    }
+
+    return result;
 }
 
 /*
@@ -49,6 +81,12 @@ function getEnumProps(obj) {
  Функция должна перебрать все свойства объекта, преобразовать их имена в верхний регистра и вернуть в виде массива
  */
 function upperProps(obj) {
+    var result = getEnumProps(obj);
+    for (var i = 0; i < result.length; i++) {
+        result.splice(i, 1, result[i].toUpperCase());
+    }
+
+    return result;
 }
 
 /*
@@ -56,6 +94,7 @@ function upperProps(obj) {
  Напишите аналог встроенного метода slice для работы с массивами
  */
 function slice(array, from, to) {
+
 }
 
 /*
