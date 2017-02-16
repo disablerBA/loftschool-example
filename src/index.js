@@ -1,222 +1,170 @@
-/* ДЗ 2 - работа с исключениями и отладчиком */
+/* ДЗ 4 - работа с DOM */
 
-/*
- вспомогательные функции
+/**
+ * Функция должна создать элемент с тегом DIV, поместить в него текстовый узел и вернуть получившийся элемент
+ *
+ * @param {string} text - текст, который необходимо поместить в div
+ * @return {Element}
  */
-function isEmptyArray(object) {
-    return !Array.isArray(object) || object.length === 0;
+function createDivWithText(text) {
+    var div = document.createElement('div');
+    div.innerHTML = text;
+    return div;
 }
 
-function isFunction(fn) {
-    return typeof fn === 'function';
+/**
+ * Функция должна создать элемент с тегом A, установить значение для атрибута href и вернуть получившийся элемент
+ *
+ * @param {string} hrefValue - значение для атрибута href
+ * @return {Element}
+ */
+function createAWithHref(hrefValue) {
+    var a = document.createElement('a');
+    a.setAttribute('href', hrefValue);
+    return a;
 }
 
-function getArgumentsArray(args) {
+/**
+ * Функция должна вставлять элемент what в начало элемента where
+ *
+ * @param {Element} what - что вставлять
+ * @param {Element} where - куда вставлять
+ */
+function prepend(what, where) {
+
+}
+
+/**
+ * Функция должна перебрать все дочерние элементы элемента where
+ * и вернуть массив, состоящий из тех дочерних элементов
+ * следующим соседом которых является элемент с тегом P
+ * Рекурсия - по желанию
+ *
+ * @param {Element} where - где искать
+ * @return {Array<Element>}
+ *
+ * @example
+ * для html '<div></div><p></p><a></a><span></span><p></p>'
+ * функция должна вернуть: [div, span]
+ * т.к. следующим соседом этих элементов является элемент с тегом P
+ */
+function findAllPSiblings(where) {
+}
+
+/**
+ * Функция должна перебрать все дочерние узлы типа "элемент" внутри where
+ * и вернуть массив, состоящий из текстового содержимого перебираемых элементов
+ * Но похоже, что в код закралась ошибка, которую нужно найти и исправить
+ *
+ * @param {Element} where - где искать
+ * @return {Array<string>}
+ */
+function findError(where) {
     var result = [];
 
-    for (var i = 0; i < args.length; i++) {
-        result.push(args[i]);
+    for (var child of where.childNodes) {
+        result.push(child.innerText);
     }
 
     return result;
 }
 
-function processArray(initialValue, array, fn) {
-    var result = initialValue;
-
-    for (var i = 0; i < array.length; i ++) {
-        result = fn(result, array[i]);
-    }
-
-    return result;
-}
-
-function assertIsFunction(fn) {
-    if (!isFunction(fn)) {
-        throwNotFunctionError();
-    }
-}
-
-function throwNotFunctionError() {
-    throw new Error('fn is not a function');
-}
-
-function assertNotEmptyArray(array) {
-    if (isEmptyArray(array) ) {
-        throwEmptyArrayError();
-    }
-}
-
-function throwEmptyArrayError() {
-    throw new Error('empty array');
-}
-
-function assertIsNumber(number) {
-    if (!isFinite(number)) {
-        throwNotNumberError();
-    }
-}
-
-function throwNotNumberError() {
-    throw new Error('number is not a number');
-}
-
-function assertNotDivisionByZero(args) {
-    if (isSomeTrue(getArgumentsArray(args), e => e == 0)) {
-        throwDivisionByZeroError();
-    }
-}
-
-function throwDivisionByZeroError() {
-    throw new Error('division by 0');
-}
-
-/*
- вспомогательные функции
+/**
+ * Функция должна перебрать все дочерние узлы элемента where
+ * и удалить из него все текстовые узлы
+ * Без рекурсии!
+ * Будьте внимательны при удалении узлов,
+ * можно получить неожиданное поведение при переборе узлов
+ *
+ * @param {Element} where - где искать
+ *
+ * @example
+ * после выполнения функции, дерево <div></div>привет<p></p>loftchool!!!
+ * должно быть преобразовано в <div></div><p></p>
  */
-
-/*
- Задача 1:
- Функция принимает массив и фильтрующую фукнцию и должна вернуть true или false
- Функция должна вернуть true только если fn вернула true для всех элементов массива
- Необходимо выбрасывать исключение в случаях:
- - array не массив или пустой массив (с текстом "empty array")
- - fn не является функцией (с текстом "fn is not a function")
- Зарпещено использовать встроенные методы для работы с массивами
- */
-function isAllTrue(array, fn) {
-    assertNotEmptyArray(array);
-    assertIsFunction(fn);
-
-    var result = true;
-
-    for (var i = 0; i < array.length; i++) {
-        if (!fn(array[i])) {
-            result = false;
-        }
-    }
-
-    return result;
+function deleteTextNodes(where) {
 }
 
-/*
- Задача 2:
- Функция принимает массив и фильтрующую фукнцию и должна вернуть true или false
- Функция должна вернуть true если fn вернула true хотя бы для одного из элементов массива
- Необходимо выбрасывать исключение в случаях:
- - array не массив или пустой массив (с текстом "empty array")
- - fn не является функцией (с текстом "fn is not a function")
- Зарпещено использовать встроенные методы для работы с массивами
+/**
+ * Выполнить предудыщее задание с использование рекурсии
+ * то есть необходимо заходить внутрь каждого дочернего элемента
+ *
+ * @param {Element} where - где искать
+ *
+ * @example
+ * после выполнения функции, дерево <span> <div> <b>привет</b> </div> <p>loftchool</p> !!!</span>
+ * должно быть преобразовано в <span><div><b></b></div><p></p></span>
  */
-function isSomeTrue(array, fn) {
-    assertNotEmptyArray(array);
-    assertIsFunction(fn);
-
-    for (var i = 0; i < array.length; i++) {
-        if (fn(array[i])) {
-            return true;
-        }
-    }
-
-    return false;
+function deleteTextNodesRecursive(where) {
 }
 
-/*
- Задача 3:
- Функция принимает заранее неизветсное количество аргументов, первым из которых является функция fn
- Функция должна поочередно запусти fn для каждого переданного аргумента (кроме самой fn)
- Функция должна вернуть массив аргументов, для которых fn выбросила исключение
- Необходимо выбрасывать исключение в случаях:
- - fn не является функцией (с текстом "fn is not a function")
+/**
+ * *** Со звездочкой ***
+ * Необходимо собрать статистику по всем узлам внутри элемента root и вернуть ее в виде объекта
+ * Статистика должна содержать:
+ * - количество текстовых узлов
+ * - количество элементов каждого класса
+ * - количество элементов каждого тега
+ * Для работы с классами рекомендуется использовать свойство classList
+ * Постарайтесь не создавать глобальных переменных
+ *
+ * @param {Element} root - где собирать статистику
+ * @return {{tags: Object<string, number>, classes: Object<string, number>, texts: number}}
+ *
+ * @example
+ * для html <div class="some-class-1"><b>привет!</b> <b class="some-class-1 some-class-2">loftschool</b></div>
+ * должен быть возвращен такой объект:
+ * {
+ *   tags: { DIV: 1, B: 2},
+ *   classes: { "some-class-1": 2, "some-class-2": 1 },
+ *   texts: 3
+ * }
  */
-function returnBadArguments(fn) {
-    assertIsFunction(fn);
-
-    function getProcessArguments(args) {
-        var result = [];
-
-        for (var i = 1; i < args.length; i++) {
-            result.push(args[i]);
-        }
-
-        return result;
-    }
-
-    var result = [];
-    var processArguments = getProcessArguments(arguments);
-
-    for (var i = 0; i < processArguments.length; i++) {
-        try {
-            fn(processArguments[i]);
-        } catch (e) {
-            result.push(processArguments[i]);
-        }
-    }
-
-    return result;
+function collectDOMStat(root) {
 }
 
-/*
- Задача 4:
- Используя отладчик и точки остановки, определите в каких случаях if дает true
- Исправьте условие внутри if таким образом, чтобы функция возвращала true
+/**
+ * *** Со звездочкой ***
+ * Функция должна отслеживать добавление и удаление элементов внутри элемента where
+ * Как только в where добавляются или удаляются элемента,
+ * необходимо сообщать об этом при помощи вызова функции fn со специальным аргументом
+ * В качестве аргумента должен быть передан объек с двумя свойствами:
+ * - type: типа события (insert или remove)
+ * - nodes: массив из удаленных или добавленных элементов (а зависимости от события)
+ * Отслеживание должно работать вне зависимости от глубины создаваемых/удаляемых элементов
+ * Рекомендуется использовать MutationObserver
+ *
+ * @param {Element} where - где отслеживать
+ * @param {function(info: {type: string, nodes: Array<Element>})} fn - функция, которую необходимо вызвать
+ *
+ * @example
+ * если в where или в одного из его детей добавляется элемент div
+ * то fn должна быть вызвана с аргументов:
+ * {
+ *   type: 'insert',
+ *   nodes: [div]
+ * }
+ *
+ * ------
+ *
+ * если из where или из одного из его детей удаляется элемент div
+ * то fn должна быть вызвана с аргументов:
+ * {
+ *   type: 'remove',
+ *   nodes: [div]
+ * }
  */
-function findError(data1, data2) {
-    return (function() {
-        for (var i = 0; i < data1.length; i++) {
-            if ((data1[i] != data2[i]) && !(isNaN(data1[i]) && isNaN(data2[i]))) {
-                return false;
-            }
-        }
-
-        return true;
-    })();
-}
-
-/*
- Задача 5:
- Функция имеет параметр number (по умолчанию - 0)
- Функция должна вернуть объект, у которого должно быть несколько методов:
- - sum - складывает number с переданным аргументами
- - dif - вычитает из number переданные аргументы
- - div - делит number на первый аргумент. Результат делится на следующий аргумент (если передан) и так далее
- - mul - умножает number на первый аргумент. Результат умножается на следующий аргумент (если передан) и так далее
-
- Количество передаваемых в методы аргументов заранее неизвестно
- Необходимо выбрасывать исключение в случаях:
- - number не является числом (с текстом "number is not a number")
- - какой-либо из аргументов div является нулем (с текстом "division by 0")
- */
-function calculator(number = 0) {
-    assertIsNumber(number);
-
-    var result = {};
-
-    result.sum = function() {
-        return processArray(number, getArgumentsArray(arguments), (value1, value2) => value1 + value2);
-    };
-
-    result.dif = function() {
-        return processArray(number, getArgumentsArray(arguments), (value1, value2) => value1 - value2)
-    };
-
-    result.div = function() {
-        assertNotDivisionByZero(arguments);
-
-        return processArray(number, getArgumentsArray(arguments), (value1, value2) => value1 / value2)
-    };
-
-    result.mul = function() {
-        return processArray(number, getArgumentsArray(arguments), (value1, value2) => value1 * value2)
-    };
-
-    return result;
+function observeChildNodes(where, fn) {
 }
 
 export {
-    isAllTrue,
-    isSomeTrue,
-    returnBadArguments,
+    createDivWithText,
+    createAWithHref,
+    prepend,
+    findAllPSiblings,
     findError,
-    calculator
+    deleteTextNodes,
+    deleteTextNodesRecursive,
+    collectDOMStat,
+    observeChildNodes
 };
