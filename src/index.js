@@ -31,7 +31,7 @@ function createAWithHref(hrefValue) {
  * @param {Element} where - куда вставлять
  */
 function prepend(what, where) {
-
+    where.insertBefore(what, where.firstChild);
 }
 
 /**
@@ -49,6 +49,13 @@ function prepend(what, where) {
  * т.к. следующим соседом этих элементов является элемент с тегом P
  */
 function findAllPSiblings(where) {
+    var result = [];
+    var pTags = where.getElementsByTagName('p');
+    for (var pTag of pTags) {
+        result.push(pTag.previousElementSibling);
+    }
+
+    return result;
 }
 
 /**
@@ -62,7 +69,7 @@ function findAllPSiblings(where) {
 function findError(where) {
     var result = [];
 
-    for (var child of where.childNodes) {
+    for (var child of where.children) {
         result.push(child.innerText);
     }
 
@@ -83,6 +90,11 @@ function findError(where) {
  * должно быть преобразовано в <div></div><p></p>
  */
 function deleteTextNodes(where) {
+    for (var node of where.childNodes) {
+        if (node instanceof Text) {
+            where.removeChild(node);
+        }
+    }
 }
 
 /**
