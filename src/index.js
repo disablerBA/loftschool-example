@@ -1,156 +1,47 @@
-/* ДЗ 2 - работа с исключениями и отладчиком */
-
-/*
- вспомогательные функции
- */
-function isEmptyArray(object) {
-    return !Array.isArray(object) || object.length === 0;
-}
-
-function isFunction(fn) {
-    return typeof fn === 'function';
-}
-
-function getArgumentsArray(args) {
-    var result = [];
-
-    for (var i = 0; i < args.length; i++) {
-        result.push(args[i]);
-    }
-
-    return result;
-}
-
-function processArray(initialValue, array, fn) {
-    var result = initialValue;
-
-    for (var i = 0; i < array.length; i ++) {
-        result = fn(result, array[i]);
-    }
-
-    return result;
-}
-
-function assertIsFunction(fn) {
-    if (!isFunction(fn)) {
-        throwNotFunctionError();
-    }
-}
-
-function throwNotFunctionError() {
-    throw new Error('fn is not a function');
-}
-
-function assertNotEmptyArray(array) {
-    if (isEmptyArray(array) ) {
-        throwEmptyArrayError();
-    }
-}
-
-function throwEmptyArrayError() {
-    throw new Error('empty array');
-}
-
-function assertIsNumber(number) {
-    if (!isFinite(number)) {
-        throwNotNumberError();
-    }
-}
-
-function throwNotNumberError() {
-    throw new Error('number is not a number');
-}
-
-function assertNotDivisionByZero(args) {
-    if (isSomeTrue(getArgumentsArray(args), e => e == 0)) {
-        throwDivisionByZeroError();
-    }
-}
-
-function throwDivisionByZeroError() {
-    throw new Error('division by 0');
-}
-
-/*
- вспомогательные функции
- */
+/* ДЗ 3 - объекты и массивы */
 
 /*
  Задача 1:
- Функция принимает массив и фильтрующую фукнцию и должна вернуть true или false
- Функция должна вернуть true только если fn вернула true для всех элементов массива
- Необходимо выбрасывать исключение в случаях:
- - array не массив или пустой массив (с текстом "empty array")
- - fn не является функцией (с текстом "fn is not a function")
- Зарпещено использовать встроенные методы для работы с массивами
+ Напишите аналог встроенного метода forEach для работы с массивами
  */
-function isAllTrue(array, fn) {
-    assertNotEmptyArray(array);
-    assertIsFunction(fn);
-
-    var result = true;
-
+function forEach(array, fn) {
     for (var i = 0; i < array.length; i++) {
-        if (!fn(array[i])) {
-            result = false;
-        }
+        fn(array[i], i, array);
     }
-
-    return result;
 }
 
 /*
  Задача 2:
- Функция принимает массив и фильтрующую фукнцию и должна вернуть true или false
- Функция должна вернуть true если fn вернула true хотя бы для одного из элементов массива
- Необходимо выбрасывать исключение в случаях:
- - array не массив или пустой массив (с текстом "empty array")
- - fn не является функцией (с текстом "fn is not a function")
- Зарпещено использовать встроенные методы для работы с массивами
+ Напишите аналог встроенного метода map для работы с массивами
  */
-function isSomeTrue(array, fn) {
-    assertNotEmptyArray(array);
-    assertIsFunction(fn);
+function map(array, fn) {
+    var result = [];
 
     for (var i = 0; i < array.length; i++) {
-        if (fn(array[i])) {
-            return true;
-        }
+        result.push(fn(array[i], i , array));
     }
 
-    return false;
+    return result;
 }
 
 /*
  Задача 3:
- Функция принимает заранее неизветсное количество аргументов, первым из которых является функция fn
- Функция должна поочередно запусти fn для каждого переданного аргумента (кроме самой fn)
- Функция должна вернуть массив аргументов, для которых fn выбросила исключение
- Необходимо выбрасывать исключение в случаях:
- - fn не является функцией (с текстом "fn is not a function")
+ Напишите аналог встроенного метода reduce для работы с массивами
  */
-function returnBadArguments(fn) {
-    assertIsFunction(fn);
+function reduce(array, fn, initial) {
+    var result;
+    var initialIndex;
 
-    function getProcessArguments(args) {
-        var result = [];
-
-        for (var i = 1; i < args.length; i++) {
-            result.push(args[i]);
-        }
-
-        return result;
+    if (initial !== undefined) {
+        result = initial;
+        initialIndex = 0;
+    } else {
+        result = array[0];
+        initialIndex = 1;
     }
 
-    var result = [];
-    var processArguments = getProcessArguments(arguments);
-
-    for (var i = 0; i < processArguments.length; i++) {
-        try {
-            fn(processArguments[i]);
-        } catch (e) {
-            result.push(processArguments[i]);
-        }
+    for (var i = initialIndex; i < array.length; i++) {
+        result = fn(result, array[i], i, array);
     }
 
     return result;
@@ -158,65 +49,108 @@ function returnBadArguments(fn) {
 
 /*
  Задача 4:
- Используя отладчик и точки остановки, определите в каких случаях if дает true
- Исправьте условие внутри if таким образом, чтобы функция возвращала true
+ Функция принимает объект и имя свойства, которое необходиом удалить из объекта
+ Функция должна удалить указанное свойство из указанного объекта
  */
-function findError(data1, data2) {
-    return (function() {
-        for (var i = 0; i < data1.length; i++) {
-            if ((data1[i] != data2[i]) && !(isNaN(data1[i]) && isNaN(data2[i]))) {
-                return false;
-            }
-        }
-
-        return true;
-    })();
+function deleteProperty(obj, prop) {
+    delete obj[prop];
 }
 
 /*
  Задача 5:
- Функция имеет параметр number (по умолчанию - 0)
- Функция должна вернуть объект, у которого должно быть несколько методов:
- - sum - складывает number с переданным аргументами
- - dif - вычитает из number переданные аргументы
- - div - делит number на первый аргумент. Результат делится на следующий аргумент (если передан) и так далее
- - mul - умножает number на первый аргумент. Результат умножается на следующий аргумент (если передан) и так далее
-
- Количество передаваемых в методы аргументов заранее неизвестно
- Необходимо выбрасывать исключение в случаях:
- - number не является числом (с текстом "number is not a number")
- - какой-либо из аргументов div является нулем (с текстом "division by 0")
+ Функция принимает объект и имя свойства и возвращает true или false
+ Функция должна проверить существует ли укзаанное свойство в указанном объекте
  */
-function calculator(number = 0) {
-    assertIsNumber(number);
+function hasProperty(obj, prop) {
+    return obj.hasOwnProperty(prop);
+}
 
-    var result = {};
+/*
+ Задача 6:
+ Функция должна получить все перечисляемые свойства объекта и вернуть их в виде массива
+ */
+function getEnumProps(obj) {
+    var result = [];
 
-    result.sum = function() {
-        return processArray(number, getArgumentsArray(arguments), (value1, value2) => value1 + value2);
-    };
-
-    result.dif = function() {
-        return processArray(number, getArgumentsArray(arguments), (value1, value2) => value1 - value2)
-    };
-
-    result.div = function() {
-        assertNotDivisionByZero(arguments);
-
-        return processArray(number, getArgumentsArray(arguments), (value1, value2) => value1 / value2)
-    };
-
-    result.mul = function() {
-        return processArray(number, getArgumentsArray(arguments), (value1, value2) => value1 * value2)
-    };
+    for (var prop in obj) {
+        result.push(prop);
+    }
 
     return result;
 }
 
+/*
+ Задача 7:
+ Функция должна перебрать все свойства объекта, преобразовать их имена в верхний регистра и вернуть в виде массива
+ */
+function upperProps(obj) {
+    var result = getEnumProps(obj);
+
+    for (var i = 0; i < result.length; i++) {
+        result.splice(i, 1, result[i].toUpperCase());
+    }
+
+    return result;
+}
+
+/*
+ Задача 8 *:
+ Напишите аналог встроенного метода slice для работы с массивами
+ */
+function slice(array, from, to) {
+    var result = [];
+
+    if (from === undefined) {
+        from = 0;
+        to = array.length;
+    }
+
+    if (to === undefined) {
+        to = array.length;
+    }
+
+    if (from < 0) {
+        from += array.length;
+
+        if (from < 0) {
+            from = 0;
+        }
+    }
+
+    if (to < 0 ) {
+        to += array.length;
+    }
+
+    if (to < from) {
+        return result;
+    }
+
+    result = Array.from(array);
+    return result.splice(from, to - from);
+}
+
+/*
+ Задача 9 *:
+ Функция принимает объект и должна вернуть Proxy для этого объекта
+ Proxy должен перехватывать все попытки записи значений свойств и возводить это значение в квадрат
+ */
+function createProxy(obj) {
+    return new Proxy(obj, {
+        set(target, prop, value) {
+            target[prop] = value * value;
+            return true;
+        }
+    });
+}
+
 export {
-    isAllTrue,
-    isSomeTrue,
-    returnBadArguments,
-    findError,
-    calculator
+    forEach,
+    map,
+    reduce,
+    deleteProperty,
+    hasProperty,
+    getEnumProps,
+    upperProps,
+    slice,
+    createProxy
 };
