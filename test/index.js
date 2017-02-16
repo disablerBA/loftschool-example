@@ -4,287 +4,229 @@ const nativeReduce = Array.prototype.reduce;
 
 import assert from 'assert';
 import {
-    forEach,
-    map,
-    reduce,
-    deleteProperty,
-    hasProperty,
-    getEnumProps,
-    upperProps,
-    slice,
-    createProxy
+    createDivWithText,
+    createAWithHref,
+    prepend,
+    findAllPSiblings,
+    findError,
+    deleteTextNodes,
+    deleteTextNodesRecursive,
+    collectDOMStat,
+    observeChildNodes
 } from '../src/index';
 
-describe('ДЗ 3 - объекты и массивы', () => {
-    describe('forEach', () => {
-        it('должна вызывать функцию для каждого элемента массива и передавать элемент первым аргументом', () => {
-            let array = [1, 2, 3, 4, 5];
-            let passed = [];
+describe('ДЗ 4 - Работа с DOM', () => {
+    describe('createDivWithText', () => {
+        it('должна возвращать элемент с тегом DIV', () => {
+            let text = 'привет!';
+            let result = createDivWithText(text);
 
-            forEach(array, el => passed.push(el));
-
-            assert.deepEqual(array, passed);
+            assert(result instanceof Element);
+            assert.equal(result.tagName, 'DIV');
         });
 
-        it('должна передавать индекс элемента вторым аргументом', () => {
-            let array = [1, 2, 3, 4, 5];
-            let index = 0;
+        it('должна добавлять текст в элемент', () => {
+            let text = 'привет!';
+            let result = createDivWithText(text);
 
-            forEach(array, (el, i) => assert.equal(i, index++));
-        });
-
-        it('должна передавать сам массив третьим аргументом', () => {
-            let array = [1, 2, 3, 4, 5];
-
-            forEach(array, (el, i, a) => assert.strictEqual(a, array));
+            assert.equal(result.innerText, text);
         });
     });
 
-    describe('map', () => {
-        it('должна вызывать функцию для каждого элемента массива и передавать элемент первым аргументом', () => {
-            let array = [1, 2, 3, 4, 5];
-            let passed = [];
+    describe('createAWithHref', () => {
+        it('должна возвращать элемент с тегом A', () => {
+            let href = 'http://loftschool.com';
+            let result = createAWithHref(href);
 
-            map(array, el => passed.push(el));
-
-            assert.deepEqual(array, passed);
+            assert(result instanceof Element);
+            assert.equal(result.tagName, 'A');
         });
 
-        it('должна передавать индекс элемента вторым аргументом', () => {
-            let array = [1, 2, 3, 4, 5];
-            let index = 0;
+        it('должна добавлять атрибут href', () => {
+            let href = 'http://loftschool.com';
+            let result = createAWithHref(href);
 
-            map(array, (el, i) => assert.equal(i, index++));
-        });
-
-        it('должна передавать сам массив третьим аргументом', () => {
-            let array = [1, 2, 3, 4, 5];
-
-            map(array, (el, i, a) => assert.strictEqual(a, array));
-        });
-
-        it('должна возвращать измененную копию массива', () => {
-            let array = [1, 2, 3, 4, 5];
-            let target = nativeMap.call(array, el => el ** 2);
-            let result = map(array, el => el ** 2);
-
-            assert.deepEqual(result, target);
-        });
-
-        it('не должна изменять оригинальный массив', () => {
-            let array = [1, 2, 3, 4, 5];
-            let arrayCopy = nativeSlice.call(array);
-
-            map(array, el => el ** 2);
-            assert.deepEqual(array, arrayCopy);
+            assert.equal(result.getAttribute('href'), href);
         });
     });
 
-    describe('reduce', () => {
-        it('должна вызывать функцию для каждого элемента и передавать предыдущий результат первым аргументом', () => {
-            let array = [1, 2, 3, 4, 5];
-            let i = 0;
-            let prevResult = array[0];
+    describe('prepend', () => {
+        it('должна добавлять элемента в начало', () => {
+            let where = document.createElement('div');
+            let what = document.createElement('p');
 
-            reduce(array, prev => {
-                assert.equal(prev, prevResult);
+            where.innerHTML = ', <b>loftschool</b>!';
+            what.innerText = 'привет';
 
-                return prevResult = i++;
-            });
-        });
+            prepend(what, where);
 
-        it('должна учитывать initial', () => {
-            let array = [1, 2, 3, 4, 5];
-            let passed = [];
-
-            reduce(array, prev => passed.push(prev), 10);
-            assert.deepEqual(passed[0], 10);
-        });
-
-        it('если initial не указан, то при первой итерации в prev передается первый элемент массива', () => {
-            let array = [1, 2, 3, 4, 5];
-            let passed = [];
-
-            reduce(array, prev => passed.push(prev));
-            assert.deepEqual(passed[0], 1);
-        });
-
-        it('должна передавать элемент вторым аргументом', () => {
-            let array = [1, 2, 3, 4, 5];
-            let passed = [];
-
-            reduce(array, (prev, el) => passed.push(el));
-            assert.deepEqual(array.slice(1), passed);
-
-            passed = [];
-            reduce(array, (prev, el) => passed.push(el), 10); // с учетом initial
-            assert.deepEqual(array, passed);
-        });
-
-        it('должна передавать индекс элемента третьим аргументом', () => {
-            let array = [1, 2, 3, 4, 5];
-            let index = 1;
-
-            reduce(array, (prev, el, i) => assert.equal(i, index++));
-
-            index = 0;
-            reduce(array, (prev, el, i) => assert.equal(i, index++), 10); // с учетом initial
-        });
-
-        it('должна передавать сам массив четвертым аргументом', () => {
-            let array = [1, 2, 3, 4, 5];
-
-            reduce(array, (prev, el, i, a) => assert.strictEqual(a, array));
-        });
-
-        it('не должна изменять оригинальный массив', () => {
-            let array = [1, 2, 3, 4, 5];
-            let arrayCopy = nativeSlice.call(array);
-
-            reduce(array, el => el ** 2);
-            assert.deepEqual(array, arrayCopy);
-        });
-
-        it('общая проверка работоспособности', () => {
-            let array = [1, 2, 3, 4, 5];
-            let target = nativeReduce.call(array, (prev, el) => prev + el);
-            let result = reduce(array, (prev, el) => prev + el);
-
-            assert.deepEqual(result, target);
-
-            target = nativeReduce.call(array, (prev, el) => prev + el, 10);
-            result = reduce(array, (prev, el) => prev + el, 10);
-            assert.deepEqual(result, target);
+            assert.equal(where.firstChild, what);
+            assert.equal(where.innerHTML, '<p>привет</p>, <b>loftschool</b>!');
         });
     });
 
-    describe('deleteProperty', () => {
-        it('должна удалять указанное свойство из объекта', () => {
-            let obj = { a: 1 };
-
-            deleteProperty(obj, 'a');
-
-            assert.equal('a' in obj, false)
-        });
-    });
-
-    describe('hasProperty', () => {
-        it('должна возвращать true если объект имеет указанное свойство и false в противном случае', () => {
-            let obj = { a: 1 };
-
-            assert.equal(hasProperty(obj, 'a'), true);
-            assert.equal(hasProperty(obj, 'b'), false);
-        });
-    });
-
-    describe('getEnumProps', () => {
-        it('должна возвращать массив только с перечисляемыми свойствами', () => {
-            let obj = { a: 1, b: 2 };
-            let target = ['a', 'b'];
+    describe('findAllPSiblings', () => {
+        it('должна возвращать массив с элементами, соседями которых являются P', () => {
+            let where = document.createElement('div');
             let result;
 
-            Object.defineProperty(obj, 'c', { enumerable: false });
-            result = getEnumProps(obj);
+            where.innerHTML = '<div></div><p></p><span></span><span></span><p></p>';
+            result = findAllPSiblings(where);
 
-            assert.deepEqual(result, target);
+            assert(Array.isArray(result));
+            assert.deepEqual(result, [where.children[0], where.children[3]]);
         });
     });
 
-    describe('upperProps', () => {
-        it('должна возвращать массив с именами свойств и преобразовывать эти имена в верхний регистр', () => {
-            let obj = { a: 1, b: 2 };
-            let target = ['A', 'B'];
-            let result = upperProps(obj);
+    describe('findError', () => {
+        it('должна возвращать массив из текстового содержимого элементов', () => {
+            let where = document.createElement('div');
+            let result;
 
-            assert.deepEqual(result, target);
+            where.innerHTML = ' <div>привет</div>, <div>loftschool</div>!!!';
+            result = findError(where);
+
+            assert(Array.isArray(result));
+            assert.deepEqual(result, ['привет', 'loftschool']);
+        });
+    });
+    describe('deleteTextNodesRecursive', () => {
+        it('должна рекурсивно удалить все текстовые узлы', () => {
+            let where = document.createElement('div');
+
+            where.innerHTML = '<span> <div> <b>привет</b> </div> <p>loftchool</p> !!!</span>';
+            deleteTextNodesRecursive(where);
+
+            assert.equal(where.innerHTML, '<span><div><b></b></div><p></p></span>');
         });
     });
 
-    describe('slice', () => {
-        it('общая проверка работоспособности', () => {
-            let array = [1, 2, 3, 4, 5, 6, 7];
-            let target = nativeSlice.call(array);
-            let result = slice(array);
+    describe('collectDOMStat', () => {
+        it('должна вернуть статистику по переданному дереву', () => {
+            let where = document.createElement('div');
+            let stat = {
+                tags: { DIV: 1, B: 2 },
+                classes: { 'class-1': 2, 'class-2': 1 },
+                texts: 3
+            };
+            let result;
 
-            assert.deepEqual(result, target);
-
-            target = nativeSlice.call(array, 0);
-            result = slice(array, 0);
-            assert.deepEqual(result, target);
-
-            target = nativeSlice.call(array, 0, 0);
-            result = slice(array, 0, 0);
-            assert.deepEqual(result, target);
-
-            target = nativeSlice.call(array, 0, 1);
-            result = slice(array, 0, 1);
-            assert.deepEqual(result, target);
-
-            target = nativeSlice.call(array, 0, 2);
-            result = slice(array, 0, 2);
-            assert.deepEqual(result, target);
-
-            target = nativeSlice.call(array, 0, 5);
-            result = slice(array, 0, 5);
-            assert.deepEqual(result, target);
-
-            target = nativeSlice.call(array, 0, -1);
-            result = slice(array, 0, -1);
-            assert.deepEqual(result, target);
-
-            target = nativeSlice.call(array, 0, -3);
-            result = slice(array, 0, -3);
-            assert.deepEqual(result, target);
-
-            target = nativeSlice.call(array, 0, -10000);
-            result = slice(array, 0, -10000);
-            assert.deepEqual(result, target);
-
-            target = nativeSlice.call(array, 3);
-            result = slice(array, 3);
-            assert.deepEqual(result, target);
-
-            target = nativeSlice.call(array, 3, -100);
-            result = slice(array, 3, -100);
-            assert.deepEqual(result, target);
-
-            target = nativeSlice.call(array, 3, 100);
-            result = slice(array, 3, 100);
-            assert.deepEqual(result, target);
-
-            target = nativeSlice.call(array, 3, 5);
-            result = slice(array, 3, 5);
-            assert.deepEqual(result, target);
-
-            target = nativeSlice.call(array, 9999);
-            result = slice(array, 9999);
-            assert.deepEqual(result, target);
-
-            target = nativeSlice.call(array, -9999);
-            result = slice(array, -9999);
-            assert.deepEqual(result, target);
-
-            target = nativeSlice.call(array, -9999, 4);
-            result = slice(array, -9999, 4);
-            assert.deepEqual(result, target);
-
-            target = nativeSlice.call(array, -9999, -4);
-            result = slice(array, -9999, -4);
-            assert.deepEqual(result, target);
+            where.innerHTML = '<div class="class-1"><b>привет!</b> <b class="class-1 class-2">loftschool</b></div>';
+            result = collectDOMStat(where);
+            assert.deepEqual(result, stat);
         });
     });
 
-    describe('createProxy', () => {
-        it('должна вернуть Proxy, который возводит в квадрат любое записываемое значение', () => {
-            let obj = {};
+    describe('observeChildNodes', () => {
+        it('должна вызывать fn при добавлении элементов в указанный элемент', done => {
+            let where = document.createElement('div');
+            let fn = info => {
+                assert(typeof info == 'object' && info, 'info должен быть объектом');
+                assert.equal(info.type, targetInfo.type, `info.type должен быть равен ${targetInfo.type}`);
+                assert(Array.isArray(info.nodes), 'info.nodes должен быть массивом');
+                assert.equal(info.nodes.length, targetInfo.nodes.length, 'некорректный размер info.nodes');
+                targetInfo.nodes.forEach(n => assert(info.nodes.indexOf(n) > -1, 'некорректный элемент в info.nodes'));
+                done();
+            };
+            let elementToInsert = document.createElement('div');
+            let targetInfo = {
+                type: 'insert',
+                nodes: [elementToInsert]
+            };
 
-            obj = createProxy(obj);
+            document.body.appendChild(where);
 
-            obj.a = 2;
-            obj.b = 5;
+            observeChildNodes(where, fn);
+            where.appendChild(elementToInsert);
 
-            assert.equal(obj.a, 4);
-            assert.equal(obj.b, 25);
+            document.body.removeChild(where);
+        });
+    });
+
+        it('должна вызывать fn при добавлении множества элементов в указанный элемент', done => {
+            let where = document.createElement('div');
+            let fn = info => {
+                assert(typeof info == 'object' && info, 'info должен быть объектом');
+                assert.equal(info.type, targetInfo.type, `info.type должен быть равен ${targetInfo.type}`);
+                assert(Array.isArray(info.nodes), 'info.nodes должен быть массивом');
+                assert.equal(info.nodes.length, targetInfo.nodes.length, 'некорректный размер info.nodes');
+                targetInfo.nodes.forEach(n => assert(info.nodes.indexOf(n) > -1, 'некорректный элемент в info.nodes'));
+                done();
+            };
+            let elementToInsert1 = document.createElement('div');
+            let elementToInsert2 = document.createElement('div');
+            let elementToInsert3 = document.createElement('div');
+            let targetInfo = {
+                type: 'insert',
+                nodes: [elementToInsert1, elementToInsert2, elementToInsert3]
+            };
+            let fragment = new DocumentFragment();
+
+            document.body.appendChild(where);
+
+            fragment.appendChild(elementToInsert1);
+            fragment.appendChild(elementToInsert2);
+            fragment.appendChild(elementToInsert3);
+
+            observeChildNodes(where, fn);
+            where.appendChild(fragment);
+
+            document.body.removeChild(where);
+        });
+
+        it('должна вызывать fn при удалении элементов из указанного элемента', done => {
+            let where = document.createElement('div');
+            let fn = info => {
+                assert(typeof info == 'object' && info, 'info должен быть объектом');
+                assert.equal(info.type, targetInfo.type, `info.type должен быть равен ${targetInfo.type}`);
+                assert(Array.isArray(info.nodes), 'info.nodes должен быть массивом');
+                assert.equal(info.nodes.length, targetInfo.nodes.length, 'некорректный размер info.nodes');
+                targetInfo.nodes.forEach(n => assert(info.nodes.indexOf(n) > -1, 'некорректный элемент в info.nodes'));
+                done();
+            };
+            let elementToRemove = document.createElement('div');
+            let targetInfo = {
+                type: 'remove',
+                nodes: [elementToRemove]
+            };
+
+            document.body.appendChild(where);
+
+            where.appendChild(elementToRemove);
+            observeChildNodes(where, fn);
+            where.removeChild(elementToRemove);
+
+            document.body.removeChild(where);
+        });
+
+        it('должна вызывать fn при удалении множества элементов из указанного элемента', done => {
+            let where = document.createElement('div');
+            let fn = info => {
+                assert(typeof info == 'object' && info, 'info должен быть объектом');
+                assert.equal(info.type, targetInfo.type, `info.type должен быть равен ${targetInfo.type}`);
+                assert(Array.isArray(info.nodes), 'info.nodes должен быть массивом');
+                assert.equal(info.nodes.length, targetInfo.nodes.length, 'некорректный размер info.nodes');
+                targetInfo.nodes.forEach(n => assert(info.nodes.indexOf(n) > -1, 'некорректный элемент в info.nodes'));
+                done();
+            };
+            let elementToRemove1 = document.createElement('div');
+            let elementToRemove2 = document.createElement('div');
+            let elementToRemove3 = document.createElement('div');
+            let targetInfo = {
+                type: 'remove',
+                nodes: [elementToRemove1, elementToRemove2, elementToRemove3]
+            };
+
+            document.body.appendChild(where);
+
+            where.appendChild(elementToRemove1);
+            where.appendChild(elementToRemove2);
+            where.appendChild(elementToRemove3);
+
+            observeChildNodes(where, fn);
+            where.innerHTML = '';
+
+            document.body.removeChild(where);
         });
     });
 });
