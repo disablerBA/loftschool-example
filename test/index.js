@@ -1,3 +1,7 @@
+const nativeSlice = Array.prototype.slice;
+const nativeMap = Array.prototype.map;
+const nativeReduce = Array.prototype.reduce;
+
 import assert from 'assert';
 import {
     createDivWithText,
@@ -86,18 +90,6 @@ describe('ДЗ 4 - Работа с DOM', () => {
             assert.deepEqual(result, ['привет', 'loftschool']);
         });
     });
-
-    describe('deleteTextNodes', () => {
-        it('должна удалить все текстовые узлы', () => {
-            let where = document.createElement('div');
-
-            where.innerHTML = ' <div></div>привет<p></p>loftchool!!!';
-            deleteTextNodes(where);
-
-            assert.equal(where.innerHTML, '<div></div><p></p>');
-        });
-    });
-
     describe('deleteTextNodesRecursive', () => {
         it('должна рекурсивно удалить все текстовые узлы', () => {
             let where = document.createElement('div');
@@ -149,6 +141,7 @@ describe('ДЗ 4 - Работа с DOM', () => {
 
             document.body.removeChild(where);
         });
+    });
 
         it('должна вызывать fn при добавлении множества элементов в указанный элемент', done => {
             let where = document.createElement('div');

@@ -54,8 +54,6 @@ function findAllPSiblings(where) {
     for (var pTag of pTags) {
         result.push(pTag.previousElementSibling);
     }
-
-    return result;
 }
 
 /**
