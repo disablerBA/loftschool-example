@@ -67,10 +67,12 @@ function delegate(target, fn) {
  * @param {function} fn - обработчик
  */
 function once(target, fn) {
-    target.addEventListener('click', e => {
+    var func = function(event) {
         fn();
-        e.target.removeEventListener(fn);
-    })
+        event.target.removeEventListener('click', func);
+    };
+
+    target.addEventListener('click', func);
 }
 
 export {
