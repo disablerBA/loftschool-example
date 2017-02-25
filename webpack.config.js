@@ -13,9 +13,12 @@ loaders.push({
 });
 
 module.exports = {
-    entry: './src/index.js',
+    entry: {
+        main: './src/index.js',
+        towns: './src/towns.js'
+    },
     output: {
-        filename: '[hash].js',
+        filename: '[chunkhash].js',
         path: './dist'
     },
     devtool: 'source-map',
@@ -23,8 +26,7 @@ module.exports = {
         loaders
     },
     plugins: [
-        new new webpack.optimize.UglifyJsPlugin(
-        {
+        new webpack.optimize.UglifyJsPlugin({
             sourceMap: true,
             compress: {
                 drop_debugger: false
@@ -32,8 +34,15 @@ module.exports = {
         }),
         new ExtractTextPlugin('styles.css'),
         new HtmlPlugin({
-            title: 'Loft School sample project',
-            template: 'index.hbs'
+            title: 'Main Homework',
+            template: 'index.hbs',
+            chunks: ['main']
+        }),
+        new HtmlPlugin({
+            title: 'Div Drag And Drop',
+            template: 'towns.hbs',
+            filename: 'towns.html',
+            chunks: ['towns']
         }),
         new CleanWebpackPlugin(['dist'])
     ]
