@@ -70,33 +70,36 @@ filterBlock.style.display = "none";
 let filterInput = homeworkContainer.querySelector('#filter-input');
 let filterResult = homeworkContainer.querySelector('#filter-result');
 
-let towns;
-loadTowns().then(res => {
-    loadingBlock.style.display = "none";
-    filterBlock.style.display = "block";
-    towns = res;
-});
+let loadTownsPromise = loadTowns();
 
-function findMatchTowns(towns, chunkName) {
-    let result = [];
-    towns.forEach(town => {
-        if (isMatching(town.name, chunkName)) {
-            result.push(town);
-        }
+function findMatchTowns(chunkName) {
+    return loadTownsPromise.then(res => {
+        loadingBlock.style.display = "none";
+        filterBlock.style.display = "block";
+
+        let sortedTowns = [];
+        res.forEach(town => {
+            if (isMatching(town.name, chunkName)) {
+                sortedTowns.push(town);
+            }
+        });
+
+        return sortedTowns;
     });
-    return result;
 }
 
 filterInput.addEventListener('keyup', function() {
     let value = this.value.trim();
 
     filterResult.textContent = "";
-    let matchTowns = findMatchTowns(towns, value);
-    matchTowns.forEach(town => {
-        let newTown = document.createElement("div");
-        newTown.textContent = town.name;
-        filterResult.appendChild(newTown);
+    findMatchTowns(value).then(matchTowns => {
+        matchTowns.forEach(town => {
+            let newTown = document.createElement("div");
+            newTown.textContent = town.name;
+            filterResult.appendChild(newTown);
+        });
     });
+
 });
 
 export {
