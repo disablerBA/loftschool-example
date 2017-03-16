@@ -1,43 +1,144 @@
-/* ДЗ 6.1 - Асинхронность и работа с сетью */
+let allFriendsListTemplateFn = require('../all-friends-list.hbs');
+let selectedFriendsListTemplateFn = require('../selected-friends-list.hbs');
 
-/**
- * Функция должна создавать Promise, который должен быть resolved через seconds секунду после создания
- *
- * @param {number} seconds - количество секунд, через которое Promise должен быть resolved
- * @return {Promise}
- */
-function delayPromise(seconds) {
-    return new Promise((resolve) => {
-        setTimeout(() => resolve(), seconds * 1000);
-    });
-}
+let friendSelector = document.querySelector('#friend-selector');
+let allFriendsDiv = document.querySelector('#all-friends-list');
+let selectedFriendsDiv = document.querySelector('#selected-friends-list');
 
-/**
- * Функция должна вернуть Promise, который должен быть разрешен массивом городов, загруженным из
- * https://raw.githubusercontent.com/smelukov/citiesTest/master/cities.json
- * Элементы полученного массива должны быть отсортированы по имени города
- *
- * @return {Promise<Array<{name: String}>>}
- */
-function loadAndSortTowns() {
-    let url = 'https://raw.githubusercontent.com/smelukov/citiesTest/master/cities.json';
+let allFriends = [];
+let selectedFriends = [];
 
-    return new Promise((resolve) => {
-        var xhr = new XMLHttpRequest();
+function login() {
+    return new Promise((resolve, reject) => {
+        VK.init({
+            apiId: 5561322
+        });
 
-        xhr.open('GET', url);
-        xhr.responseType = 'json';
-        xhr.send();
-
-        xhr.addEventListener('load', () => {
-            var sortTowns = Array.from(xhr.response).sort((town1, town2) => town1.name.localeCompare(town2.name));
-            resolve(sortTowns);
+        VK.Auth.login(function(result) {
+            if (result.status == 'connected') {
+                resolve();
+            } else {
+                reject();
+            }
         });
     });
-
 }
 
-export {
-    delayPromise,
-    loadAndSortTowns
-};
+function getFriends() {
+    return new Promise((resolve, reject) => {
+        VK.api('friends.get', { v: 5.62, fields: 'photo_50' }, function(result) {
+            if (result.error) {
+                reject();
+            } else {
+                resolve(result.response.items);
+            }
+        })
+    });
+}
+
+function renderAllFriends(friends) {
+    allFriendsDiv.innerHTML = allFriendsListTemplateFn({friends: friends});
+}
+
+function renderSelectedFriends(friends) {
+    selectedFriendsDiv.innerHTML = selectedFriendsListTemplateFn({friends: friends});
+}
+
+function actualizeLocalStorage(friends) {
+    actualizeAllFriends(friends);
+    actualizeSelectedFriends(friends);
+}
+
+function actualizeAllFriends(friends) {
+    let allFriends = JSON.parse(localStorage.allFriends);
+    let selectedFriends = JSON.parse(localStorage.selectedFriends);
+
+    friends.forEach(friend => {
+        if (allFriends.indexOf(friend.id) == -1 && selectedFriends.indexOf(friend.id) == -1) {
+            console.log(`добавляю друга к списку всех друзей ${friend.last_name}`);
+            allFriends.push(friend.id);
+        }
+    });
+
+    for (let i = 0; i < allFriends.length; i++) {
+        if (friends.indexOf(allFriends[i]) == -1) {
+            allFriends.splice(i, 1);
+        }
+    }
+
+    localStorage.allFriends = JSON.stringify(allFriends);
+    console.log('закончил обновление хранилища для всех друзей');
+}
+
+function actualizeSelectedFriends(friends) {
+    console.log('обновляю хранилище для выбранных друзей');
+    let selectedFriends = JSON.parse(localStorage.selectedFriends);
+
+    for (let i = 0; i < selectedFriends.length; i++) {
+        if (friends.indexOf(selectedFriends[i]) == -1) {
+            selectedFriends.splice(i, 1);
+        }
+    }
+
+    localStorage.selectedFriends = JSON.stringify(selectedFriends);
+    console.log('закончил обновление хранилища для выбранных друзей');
+}
+
+function isSavedFriendsToLocalStorage() {
+    return localStorage.allFriends && localStorage.selectedFriends;
+}
+
+function saveFriendsToLocalStorage(friends) {
+    localStorage.allFriends = JSON.stringify(friends);
+    localStorage.selectedFriends = JSON.stringify([]);
+}
+
+login().then(() => {
+    return getFriends();
+}).then(result => {
+    /*if (!isSavedFriendsToLocalStorage()) {
+        saveFriendsToLocalStorage(result);
+    } else {
+        actualizeLocalStorage(result);
+    }*/
+
+    allFriends = result;
+
+    renderAllFriends(allFriends);
+    renderSelectedFriends(selectedFriends);
+
+    friendSelector.addEventListener('click', event => {
+        if (!event.target.dataset.role) {
+            return;
+        }
+
+        if (event.target.dataset.role == 'toSelected') {
+            for (let i = 0; i < allFriends.length; i++) {
+                if (allFriends[i].id == event.target.dataset.id) {
+                    selectedFriends.push(allFriends[i]);
+                    allFriends.splice(i, 1);
+                    break;
+                }
+            }
+
+            renderAllFriends(allFriends);
+            renderSelectedFriends(selectedFriends);
+        }
+
+        if (event.target.dataset.role == 'toAll') {
+            for (let i = 0; i < selectedFriends.length; i++) {
+                if (selectedFriends[i].id == event.target.dataset.id) {
+                    allFriends.push(selectedFriends[i]);
+                    selectedFriends.splice(i, 1);
+                    break;
+                }
+            }
+
+            renderAllFriends(allFriends);
+            renderSelectedFriends(selectedFriends);
+        }
+    });
+
+}).catch((e) => {
+    alert(`Ошибка ${e}`)
+});

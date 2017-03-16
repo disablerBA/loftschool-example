@@ -3,7 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <title>{{htmlWebpackPlugin.options.title}}</title>
+  <script src="https://vk.com/js/api/openapi.js?142" type="text/javascript"></script>
 </head>
 <body>
+    <div style="display: flex" id="friend-selector">
+        <div id="all-friends">
+            <input type="text" placeholder="Начните вводить имя друга">
+            <div><b>Ваши друзья</b></div>
+            <div id="all-friends-list"></div>
+        </div>
+        <div id="selected-friends">
+            <input type="text" placeholder="Начните вводить имя друга">
+            <div><b>Друзья в списке</b></div>
+            <div id="selected-friends-list"></div>
+        </div>
+    </div>
+    <button >Сохранить</button>
 </body>
 </html>
