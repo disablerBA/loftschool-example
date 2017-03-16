@@ -96,6 +96,7 @@ function saveFriendsToLocalStorage(friends) {
 login().then(() => {
     return getFriends();
 }).then(result => {
+
     /*if (!isSavedFriendsToLocalStorage()) {
         saveFriendsToLocalStorage(result);
     } else {
