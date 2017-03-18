@@ -4,6 +4,7 @@ let selectedFriendsListTemplateFn = require('../selected-friends-list.hbs');
 let friendSelector = document.querySelector('#friend-selector');
 let allFriendsDiv = document.querySelector('#all-friends-list');
 let selectedFriendsDiv = document.querySelector('#selected-friends-list');
+let saveButton = document.querySelector('#saveButton');
 
 let allFriends = [];
 let selectedFriends = [];
@@ -36,6 +37,11 @@ function getFriends() {
     });
 }
 
+function renderFriends(allFriends, selectedFriends) {
+    renderAllFriends(allFriends);
+    renderSelectedFriends(selectedFriends);
+}
+
 function renderAllFriends(friends) {
     allFriendsDiv.innerHTML = allFriendsListTemplateFn({friends: friends});
 }
@@ -44,24 +50,25 @@ function renderSelectedFriends(friends) {
     selectedFriendsDiv.innerHTML = selectedFriendsListTemplateFn({friends: friends});
 }
 
-function actualizeLocalStorage(friends) {
+function actualizeFriends(friends) {
     actualizeAllFriends(friends);
     actualizeSelectedFriends(friends);
 }
 
 function actualizeAllFriends(friends) {
-    let allFriends = JSON.parse(localStorage.allFriends);
-    let selectedFriends = JSON.parse(localStorage.selectedFriends);
+    allFriends = JSON.parse(localStorage.allFriends);
+    selectedFriends = JSON.parse(localStorage.selectedFriends);
 
     friends.forEach(friend => {
-        if (allFriends.indexOf(friend.id) == -1 && selectedFriends.indexOf(friend.id) == -1) {
+        if (allFriends.map(f => f.id).indexOf(friend.id) == -1 && selectedFriends.map(f => f.id).indexOf(friend.id) == -1) {
             console.log(`добавляю друга к списку всех друзей ${friend.last_name}`);
-            allFriends.push(friend.id);
+            allFriends.push(friend);
         }
     });
 
     for (let i = 0; i < allFriends.length; i++) {
-        if (friends.indexOf(allFriends[i]) == -1) {
+        if (friends.map(f => f.id).indexOf(allFriends[i].id) == -1) {
+            console.log(`удаляю друга из списка всех друзей ${allFriends[i].last_name}`);
             allFriends.splice(i, 1);
         }
     }
@@ -75,7 +82,7 @@ function actualizeSelectedFriends(friends) {
     let selectedFriends = JSON.parse(localStorage.selectedFriends);
 
     for (let i = 0; i < selectedFriends.length; i++) {
-        if (friends.indexOf(selectedFriends[i]) == -1) {
+        if (friends.map(f => f.id).indexOf(selectedFriends[i].id) == -1) {
             selectedFriends.splice(i, 1);
         }
     }
@@ -88,31 +95,25 @@ function isSavedFriendsToLocalStorage() {
     return localStorage.allFriends && localStorage.selectedFriends;
 }
 
-function saveFriendsToLocalStorage(friends) {
-    localStorage.allFriends = JSON.stringify(friends);
-    localStorage.selectedFriends = JSON.stringify([]);
+function saveFriendsToLocalStorage(allFriends, selectedFriends) {
+    localStorage.allFriends = JSON.stringify(allFriends);
+    localStorage.selectedFriends = JSON.stringify(selectedFriends);
 }
 
 login().then(() => {
     return getFriends();
 }).then(result => {
 
-    /*if (!isSavedFriendsToLocalStorage()) {
-        saveFriendsToLocalStorage(result);
+    if (isSavedFriendsToLocalStorage()) {
+        actualizeFriends(result);
     } else {
-        actualizeLocalStorage(result);
-    }*/
+        allFriends = result;
+        selectedFriends = [];
+    }
 
-    allFriends = result;
-
-    renderAllFriends(allFriends);
-    renderSelectedFriends(selectedFriends);
+    renderFriends(allFriends, selectedFriends);
 
     friendSelector.addEventListener('click', event => {
-        if (!event.target.dataset.role) {
-            return;
-        }
-
         if (event.target.dataset.role == 'toSelected') {
             for (let i = 0; i < allFriends.length; i++) {
                 if (allFriends[i].id == event.target.dataset.id) {
@@ -122,8 +123,7 @@ login().then(() => {
                 }
             }
 
-            renderAllFriends(allFriends);
-            renderSelectedFriends(selectedFriends);
+            renderFriends(allFriends, selectedFriends);
         }
 
         if (event.target.dataset.role == 'toAll') {
@@ -135,8 +135,11 @@ login().then(() => {
                 }
             }
 
-            renderAllFriends(allFriends);
-            renderSelectedFriends(selectedFriends);
+            renderFriends(allFriends, selectedFriends);
+        }
+
+        if (event.target.id == 'saveButton') {
+            saveFriendsToLocalStorage(allFriends, selectedFriends);
         }
     });
 
