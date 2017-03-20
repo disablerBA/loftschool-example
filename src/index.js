@@ -9,6 +9,8 @@ let saveButton = document.querySelector('#saveButton');
 let allFriends = [];
 let selectedFriends = [];
 
+let friendsPromise = getFriends();
+
 function login() {
     return new Promise((resolve, reject) => {
         VK.init({
@@ -61,24 +63,20 @@ function actualizeAllFriends(friends) {
 
     friends.forEach(friend => {
         if (allFriends.map(f => f.id).indexOf(friend.id) == -1 && selectedFriends.map(f => f.id).indexOf(friend.id) == -1) {
-            console.log(`добавляю друга к списку всех друзей ${friend.last_name}`);
             allFriends.push(friend);
         }
     });
 
     for (let i = 0; i < allFriends.length; i++) {
         if (friends.map(f => f.id).indexOf(allFriends[i].id) == -1) {
-            console.log(`удаляю друга из списка всех друзей ${allFriends[i].last_name}`);
             allFriends.splice(i, 1);
         }
     }
 
     localStorage.allFriends = JSON.stringify(allFriends);
-    console.log('закончил обновление хранилища для всех друзей');
 }
 
 function actualizeSelectedFriends(friends) {
-    console.log('обновляю хранилище для выбранных друзей');
     let selectedFriends = JSON.parse(localStorage.selectedFriends);
 
     for (let i = 0; i < selectedFriends.length; i++) {
@@ -88,7 +86,6 @@ function actualizeSelectedFriends(friends) {
     }
 
     localStorage.selectedFriends = JSON.stringify(selectedFriends);
-    console.log('закончил обновление хранилища для выбранных друзей');
 }
 
 function isSavedFriendsToLocalStorage() {
@@ -101,7 +98,7 @@ function saveFriendsToLocalStorage(allFriends, selectedFriends) {
 }
 
 login().then(() => {
-    return getFriends();
+    return friendsPromise;
 }).then(result => {
 
     if (isSavedFriendsToLocalStorage()) {
@@ -145,4 +142,44 @@ login().then(() => {
 
 }).catch((e) => {
     alert(`Ошибка ${e}`)
+});
+
+function isMatching(fullName, chunkName) {
+    if (chunkName === "") return false;
+    return fullName.toLowerCase().indexOf(chunkName.trim().toLowerCase()) !== -1;
+}
+
+
+friendSelector.addEventListener('keyup', event => {
+    friendsPromise.then(() => {
+        if (event.target.id === 'allFriendsFilter') {
+            let allFriendsFilter = document.querySelector('#allFriendsFilter');
+            let search = allFriendsFilter.value;
+
+            if (search.length === 0) {
+                renderAllFriends(allFriends);
+                return;
+            }
+
+            let filteredFriends = allFriends.filter(
+                friend => isMatching(friend.first_name.concat(' ', friend.last_name), search));
+
+            renderAllFriends(filteredFriends);
+        }
+
+        if (event.target.id === 'selectedFriendsFilter') {
+            let selectedFriendsFilter = document.querySelector('#selectedFriendsFilter');
+            let search = selectedFriendsFilter.value;
+
+            if (search.length === 0) {
+                renderSelectedFriends(selectedFriends);
+                return;
+            }
+
+            let filteredFriends = selectedFriends.filter(
+                friend => isMatching(friend.first_name.concat(' ', friend.last_name), search));
+
+            renderSelectedFriends(filteredFriends);
+        }
+    });
 });
