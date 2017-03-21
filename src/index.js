@@ -11,6 +11,20 @@ let selectedFriends = [];
 
 let friendsPromise = getFriends();
 
+login().then(() => {
+    return friendsPromise;
+}).then(result => {
+    if (isSavedFriendsToLocalStorage()) {
+        actualizeFriends(result);
+    } else {
+        initializeFriends(result);
+    }
+
+    renderFriends(allFriends, selectedFriends);
+}).catch((e) => {
+    alert(`Ошибка ${e}`)
+});
+
 function login() {
     return new Promise((resolve, reject) => {
         VK.init({
@@ -39,17 +53,31 @@ function getFriends() {
     });
 }
 
-function renderFriends(allFriends, selectedFriends) {
-    renderAllFriends(allFriends);
-    renderSelectedFriends(selectedFriends);
+function renderFriends(allFriendsId, selectedFriendsId) {
+    renderAllFriends(allFriendsId);
+    renderSelectedFriends(selectedFriendsId);
 }
 
-function renderAllFriends(friends) {
-    allFriendsDiv.innerHTML = allFriendsListTemplateFn({friends: friends});
+function renderAllFriends(friendsToRenderId) {
+    friendsPromise.then( friends => {
+        let friendsToRender = friends.filter(f => friendsToRenderId.indexOf(f.id) !== -1);
+        allFriendsDiv.innerHTML = allFriendsListTemplateFn({friends: friendsToRender});
+    });
 }
 
-function renderSelectedFriends(friends) {
-    selectedFriendsDiv.innerHTML = selectedFriendsListTemplateFn({friends: friends});
+function renderSelectedFriends(friendsToRenderId) {
+    friendsPromise.then( friends => {
+        let friendsToRender = friends.filter(f => friendsToRenderId.indexOf(f.id) !== -1);
+        selectedFriendsDiv.innerHTML = selectedFriendsListTemplateFn({friends: friendsToRender});
+    });
+}
+
+function initializeFriends(friends) {
+    allFriends = friends.map(friend => {
+        return friend.id;
+    });
+
+    selectedFriends = [];
 }
 
 function actualizeFriends(friends) {
@@ -58,33 +86,16 @@ function actualizeFriends(friends) {
 }
 
 function actualizeAllFriends(friends) {
-    allFriends = JSON.parse(localStorage.allFriends);
     selectedFriends = JSON.parse(localStorage.selectedFriends);
 
-    friends.forEach(friend => {
-        if (allFriends.map(f => f.id).indexOf(friend.id) == -1 && selectedFriends.map(f => f.id).indexOf(friend.id) == -1) {
-            allFriends.push(friend);
-        }
-    });
-
-    for (let i = 0; i < allFriends.length; i++) {
-        if (friends.map(f => f.id).indexOf(allFriends[i].id) == -1) {
-            allFriends.splice(i, 1);
-        }
-    }
-
+    allFriends = friends.map(f => f.id).filter(id => selectedFriends.indexOf(id) === -1);
     localStorage.allFriends = JSON.stringify(allFriends);
 }
 
 function actualizeSelectedFriends(friends) {
-    let selectedFriends = JSON.parse(localStorage.selectedFriends);
+    selectedFriends = JSON.parse(localStorage.selectedFriends);
 
-    for (let i = 0; i < selectedFriends.length; i++) {
-        if (friends.map(f => f.id).indexOf(selectedFriends[i].id) == -1) {
-            selectedFriends.splice(i, 1);
-        }
-    }
-
+    selectedFriends = selectedFriends.filter(id => friends.map(f => f.id).indexOf(id) !== -1);
     localStorage.selectedFriends = JSON.stringify(selectedFriends);
 }
 
@@ -92,57 +103,10 @@ function isSavedFriendsToLocalStorage() {
     return localStorage.allFriends && localStorage.selectedFriends;
 }
 
-function saveFriendsToLocalStorage(allFriends, selectedFriends) {
+function saveFriendsToLocalStorage() {
     localStorage.allFriends = JSON.stringify(allFriends);
     localStorage.selectedFriends = JSON.stringify(selectedFriends);
 }
-
-login().then(() => {
-    return friendsPromise;
-}).then(result => {
-
-    if (isSavedFriendsToLocalStorage()) {
-        actualizeFriends(result);
-    } else {
-        allFriends = result;
-        selectedFriends = [];
-    }
-
-    renderFriends(allFriends, selectedFriends);
-
-    friendSelector.addEventListener('click', event => {
-        if (event.target.dataset.role == 'toSelected') {
-            for (let i = 0; i < allFriends.length; i++) {
-                if (allFriends[i].id == event.target.dataset.id) {
-                    selectedFriends.push(allFriends[i]);
-                    allFriends.splice(i, 1);
-                    break;
-                }
-            }
-
-            renderFriends(allFriends, selectedFriends);
-        }
-
-        if (event.target.dataset.role == 'toAll') {
-            for (let i = 0; i < selectedFriends.length; i++) {
-                if (selectedFriends[i].id == event.target.dataset.id) {
-                    allFriends.push(selectedFriends[i]);
-                    selectedFriends.splice(i, 1);
-                    break;
-                }
-            }
-
-            renderFriends(allFriends, selectedFriends);
-        }
-
-        if (event.target.id == 'saveButton') {
-            saveFriendsToLocalStorage(allFriends, selectedFriends);
-        }
-    });
-
-}).catch((e) => {
-    alert(`Ошибка ${e}`)
-});
 
 function isMatching(fullName, chunkName) {
     if (chunkName === "") return false;
@@ -151,35 +115,92 @@ function isMatching(fullName, chunkName) {
 
 
 friendSelector.addEventListener('keyup', event => {
-    friendsPromise.then(() => {
-        if (event.target.id === 'allFriendsFilter') {
-            let allFriendsFilter = document.querySelector('#allFriendsFilter');
-            let search = allFriendsFilter.value;
+    if (event.target.id === 'allFriendsFilter') {
+        let allFriendsFilter = document.querySelector('#allFriendsFilter');
+        let search = allFriendsFilter.value;
 
-            if (search.length === 0) {
-                renderAllFriends(allFriends);
-                return;
-            }
-
-            let filteredFriends = allFriends.filter(
-                friend => isMatching(friend.first_name.concat(' ', friend.last_name), search));
-
-            renderAllFriends(filteredFriends);
+        if (search.length === 0) {
+            renderAllFriends(allFriends);
+            return;
         }
 
-        if (event.target.id === 'selectedFriendsFilter') {
-            let selectedFriendsFilter = document.querySelector('#selectedFriendsFilter');
-            let search = selectedFriendsFilter.value;
+        filterFriends(allFriends, search).then(filtered => renderAllFriends(filtered));
+    }
 
-            if (search.length === 0) {
-                renderSelectedFriends(selectedFriends);
-                return;
-            }
+    if (event.target.id === 'selectedFriendsFilter') {
+        let selectedFriendsFilter = document.querySelector('#selectedFriendsFilter');
+        let search = selectedFriendsFilter.value;
 
-            let filteredFriends = selectedFriends.filter(
-                friend => isMatching(friend.first_name.concat(' ', friend.last_name), search));
+        if (search.length === 0) {
+            renderSelectedFriends(selectedFriends);
+            return;
+        }
 
-            renderSelectedFriends(filteredFriends);
+        filterFriends(selectedFriends, search).then(filtered => renderSelectedFriends(filtered));
+    }
+});
+
+function filterFriends(friends, chunkName) {
+    return friendsPromise.then(result => {
+
+        let filtered = result.filter(f => friends.indexOf(f.id) !== -1)
+                             .filter(f => isMatching(f.first_name.concat(' ', f.last_name), chunkName));
+        return filtered.map(f => f.id);
+    });
+}
+
+friendSelector.addEventListener('click', event => {
+    friendsPromise.then(() => {
+        if (event.target.dataset.role == 'toSelected') {
+            toSelected(event.target.dataset.id);
+            renderFriends(allFriends, selectedFriends);
+        }
+
+        if (event.target.dataset.role == 'toAll') {
+            toAll(event.target.dataset.id);
+            renderFriends(allFriends, selectedFriends);
+        }
+
+        if (event.target.id == 'saveButton') {
+            saveFriendsToLocalStorage();
         }
     });
+});
+
+function toSelected(id) {
+    id = +id;
+    selectedFriends.push(id);
+    allFriends = allFriends.filter(i => i !== id);
+}
+
+function toAll(id) {
+    id = +id;
+    allFriends.push(id);
+    selectedFriends = selectedFriends.filter(i => i !== id);
+}
+
+document.addEventListener('drop', e => {
+    e.preventDefault();
+    var id = e.dataTransfer.getData('text');
+
+    if (e.target.id === 'selected-friends') {
+        toSelected(id);
+        renderFriends(allFriends, selectedFriends);
+    }
+    if (e.target.id === 'all-friends') {
+        toAll(id);
+        renderFriends(allFriends, selectedFriends);
+    }
+});
+
+document.addEventListener('dragover', e => {
+    console.log('перетаскиваю');
+    if (e.target.id === 'selected-friends' || e.target.id === 'all-friends') {
+        e.preventDefault();
+    }
+});
+
+document.addEventListener('dragstart', e => {
+    console.log('начал перетаскивать');
+    e.dataTransfer.setData('text', e.target.dataset.id);
 });
