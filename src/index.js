@@ -194,7 +194,6 @@ document.addEventListener('drop', e => {
 });
 
 document.addEventListener('dragover', e => {
-    console.log('перетаскиваю');
     if (e.target.id === 'selected-friends-list' || e.target.id === 'all-friends-list' ||
         e.target.parentNode.closest('#selected-friends-list') || e.target.parentNode.closest('#all-friends-list')) {
         e.preventDefault();
@@ -202,6 +201,5 @@ document.addEventListener('dragover', e => {
 });
 
 document.addEventListener('dragstart', e => {
-    console.log('начал перетаскивать');
     e.dataTransfer.setData('text', e.target.dataset.id);
 });
