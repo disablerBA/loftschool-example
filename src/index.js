@@ -183,11 +183,11 @@ document.addEventListener('drop', e => {
     e.preventDefault();
     var id = e.dataTransfer.getData('text');
 
-    if (e.target.id === 'selected-friends') {
+    if (e.target.id === 'selected-friends-list' || e.target.parentNode.closest('#selected-friends-list')) {
         toSelected(id);
         renderFriends(allFriends, selectedFriends);
     }
-    if (e.target.id === 'all-friends') {
+    if (e.target.id === 'all-friends-list' || e.target.parentNode.closest('#all-friends-list')) {
         toAll(id);
         renderFriends(allFriends, selectedFriends);
     }
@@ -195,7 +195,8 @@ document.addEventListener('drop', e => {
 
 document.addEventListener('dragover', e => {
     console.log('перетаскиваю');
-    if (e.target.id === 'selected-friends' || e.target.id === 'all-friends') {
+    if (e.target.id === 'selected-friends-list' || e.target.id === 'all-friends-list' ||
+        e.target.parentNode.closest('#selected-friends-list') || e.target.parentNode.closest('#all-friends-list')) {
         e.preventDefault();
     }
 });
