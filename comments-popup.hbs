@@ -1,0 +1,83 @@
+<style>
+    .container {
+        margin: 10px;
+        position: fixed;
+        width: 400px;
+        border-radius: 10px;
+        border: 1px solid black;
+        background-color: white;
+    }
+
+    .popupTitle {
+        border-top-left-radius: 10px;
+        border-top-right-radius: 10px;
+        padding: 10px;
+        background-color: darkorange;
+    }
+
+    .popupTitle::after {
+
+    }
+
+    .closeButton {
+        content: 'X';
+        float: right;
+        user-select: none;
+        cursor: pointer;
+    }
+
+    .comments {
+        padding: 10px;
+        height: 150px;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .inputs input, textarea {
+        padding-left: 10px;
+        margin: 10px;
+        width: 90%;
+        max-width: 90%;
+        height: 20px;
+        display: block;
+        border-radius: 20px;
+    }
+
+    .inputs textarea {
+        margin: 10px;
+        width: 90%;
+        height: 60px;
+        display: block;
+        border-radius: 20px;
+    }
+
+    .inputs [type="button"] {
+        width: 100px;
+        height: 30px;
+        float: right;
+        background-color: darkorange;
+        cursor: pointer;
+    }
+
+    .youComment {
+        padding-left: 10px;
+        padding-top: 10px;
+        color: darkorange;
+    }
+</style>
+
+<div class='popupTitle'>
+    {{title}}
+    <div class="closeButton">X</div>
+</div>
+<div id="comments" class="comments">
+    Отзывов пока нет...
+</div>
+
+<div class="youComment">ВАШ ОТЗЫВ</div>
+<div class="inputs">
+    <input type="text" id="senderNameInput" placeholder="Ваше имя"/>
+    <input type="text" id="placeInput" placeholder="Место"/>
+    <textarea id="messageTextArea" placeholder="Поделитесь впечатлениями"></textarea>
+    <input id='addCommentButton' type="button" value="Добавить">
+</div>

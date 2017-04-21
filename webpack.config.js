@@ -14,7 +14,7 @@ loaders.push({
 
 module.exports = {
     entry: {
-        main: './src/index.js',
+        main: './src/index.js'
     },
     output: {
         filename: '[chunkhash].js',
